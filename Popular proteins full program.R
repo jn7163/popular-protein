@@ -16,7 +16,13 @@ taxonomy= c("10090")       #9606 for human, 10090 for mouse
 
 # Annotation File location
 annotation_location <- "~/Documents/Ping Lab/Project Files/2015 Popular Proteins/Annotation file/10090_annotations.csv"
+
+### Clustering depth for similarity matrix between any two genes; 
+### Because I don't know how to do this efficiently, limit yourself to only the top handful of genes with most publications
+depth <- 75
 ##########################################################
+
+
 
 ### ALTERNATIVE: Combing all PMID files in the folder to get proteins for all orgams
 #search_term_1 = read.table("PMID list/gut or intestine or intestinal_pmid.txt",header=0);
@@ -28,7 +34,7 @@ annotation_location <- "~/Documents/Ping Lab/Project Files/2015 Popular Proteins
 #search_term = rbind(search_term_1,search_term_2,search_term_3,search_term_4,search_term_5,search_term_6)
 #search_term = unique(search_term)
 
-###########################################################
+###################### MAIN  ##################################
 
 # Loading the gene2pubmed file
 setwd(home_directory)
@@ -96,10 +102,7 @@ for (c in 1:nrow(sorted_gene_count_table))
   write(output, file="Similarity_output.txt", append=T)
 }
 
-
-
-### Similarity matrix between any two genes; because I don't know how to do this efficiently, limit yourself to only the top handful of genes with most publications
-depth <- 75
+################### GENE 2 GENE CLUSTER #############################
 
 #output <- paste("GeneID", "TotalPubCount", "TissuePubCount", "Semantic Distance", "Uniprot","GN","PN", sep = "\t")
 #write(output, file="Two_gene_cross_similarity_output.txt")
