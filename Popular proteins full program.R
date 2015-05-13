@@ -9,10 +9,13 @@ home_directory <- "~/Documents/Ping Lab/Project Files/2015 Popular Proteins"
 gene2pubmed_location <- "Gene2PubMed file/20140811_gene2pubmed"
 
 # PMID list location
-pmid_location <- "PMID list/gut or instestine or intestinal_pmid.txt"
+pmid_location <- "PMID list/hliver or hepatic_pmid.txt"
 
 # Species
-taxonomy= c("9606")       #9606 for human, 10090 for mouse
+taxonomy= c("10090")       #9606 for human, 10090 for mouse
+
+# Annotation File location
+annotation_location <- "~/Documents/Ping Lab/Project Files/2015 Popular Proteins/Annotation file/10090_annotations.csv"
 ##########################################################
 
 ### ALTERNATIVE: Combing all PMID files in the folder to get proteins for all orgams
@@ -55,14 +58,17 @@ rownames(sorted_gene_count_table) <- NULL
 #write.table(sorted_gene_count_table, file="First_output.txt",quote=FALSE, row.names=FALSE)
 
 # Tallying the total number of gene-linked publications in the organism
-total_linked_pub_count <- length(gene2pubmed_tax$PubMed_ID)
+total_linked_pub_count <- length(unique(gene2pubmed_tax$PubMed_ID))
+
+# Tallying the total number of gene-linked publications in the organism 
+total_linked_pub_count_term <- length(unique(gene2pubmed_tax_term$PubMed_ID))
 
 # Output: how many times have each gene been linked in all of pubmed?
 output <- paste("GeneID", "TotalPubCount", "TissuePubCount", "Semantic Distance", "Uniprot","GN","PN", sep = "\t")
 write(output, file="Similarity_output.txt")
 
 # Annotation file for Uniprot, GN, and PN
-annot = read.csv(file = "Annotation file/9606_annotations.csv");
+annot = read.csv(file = annotation_location);
 dim(annot)
 names(annot)
 Gene2Uni = match(sorted_gene_count_table$gene, annot$GeneID)
@@ -80,10 +86,12 @@ for (c in 1:nrow(sorted_gene_count_table))
   gene = sorted_gene_count_table$gene[c]
   # Getting the total number of papers for the gene (any search term)
   gene_count = (gene2pubmed_tax$GeneID==gene)
+  
+  # This is the total number of linked publication counts for the gene, in any search term
   linked_pub_count_all_tissues = length(gene2pubmed_tax$PubMed_ID[gene_count])
   # normalized distance between gene and search term (similarity should really read distance)
-  similarity_numerator = max(log10(sum(sorted_gene_count_table$count)),log10(linked_pub_count_all_tissues)) - log10(sorted_gene_count_table$count[c])
-  similarity_denominator = log10(total_linked_pub_count) - min(log10(sum(sorted_gene_count_table$count)),log10(linked_pub_count_all_tissues))
+  similarity_numerator = max(log10(total_linked_pub_count_term),log10(linked_pub_count_all_tissues)) - log10(sorted_gene_count_table$count[c])
+  similarity_denominator = log10(total_linked_pub_count) - min(log10(total_linked_pub_count_term),log10(linked_pub_count_all_tissues))
   output <- paste(gene, linked_pub_count_all_tissues, sorted_gene_count_table$count[c], round(similarity_numerator/similarity_denominator,3), annotUni[c], annotGN[c], annotPN[c], sep = "\t")
   write(output, file="Similarity_output.txt", append=T)
 }
@@ -121,7 +129,7 @@ for (d in 1:depth)
     }
     else{
     distance_numerator = max(log10(length(linked_pub_1)),log10(length(linked_pub_2))) - log10(matching_count)
-    distance_denominator = log10(sum(sorted_gene_count_table$count)) - min(log10(length(linked_pub_1)),log10(length(linked_pub_2)))
+    distance_denominator = log10(total_linked_pub_count_term) - min(log10(length(linked_pub_1)),log10(length(linked_pub_2)))
     distance = distance_numerator/distance_denominator
     }
     colnames(matching_matrix)[e] <- as.character(annotGN[e])
