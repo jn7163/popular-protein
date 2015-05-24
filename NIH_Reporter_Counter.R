@@ -1,0 +1,1 @@
+grep("STAT3",a[,2],ignore.case=1)

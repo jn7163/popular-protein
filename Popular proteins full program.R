@@ -6,20 +6,23 @@
 home_directory <- "~/Documents/Ping Lab/Project Files/2015 Popular Proteins"
 
 # Gene2PubMed File Location
-gene2pubmed_location <- "Gene2PubMed file/20140811_gene2pubmed"
+gene2pubmed_location <- "Gene2PubMed file/20150518_gene2pubmed"
 
 # PMID list location
-pmid_location <- "PMID list/hliver or hepatic_pmid.txt"
+pmid_location <- "PMID list/heart or cardiac_pmid.txt"
 
 # Species
-taxonomy= c("10090")       #9606 for human, 10090 for mouse
+taxonomy= c("9606")       #9606 for human, 10090 for mouse
 
 # Annotation File location
-annotation_location <- "~/Documents/Ping Lab/Project Files/2015 Popular Proteins/Annotation file/10090_annotations.csv"
+annotation_location <- "~/Documents/Ping Lab/Project Files/2015 Popular Proteins/Annotation file/9606_annotations.csv"
+
+# Output file location
+output_location <- "Similarity_output.txt"
 
 ### Clustering depth for similarity matrix between any two genes; 
 ### Because I don't know how to do this efficiently, limit yourself to only the top handful of genes with most publications
-depth <- 75
+depth <- 50
 ##########################################################
 
 
@@ -56,7 +59,8 @@ gene2pubmed_tax_term <- gene2pubmed_tax[tally,]
 ## Count the frequency of each gene in the subsetted Gene2Pubmed file
 gene_count <- table(gene2pubmed_tax_term$GeneID) # Tabulate and count frequency
 gene_count_table <- as.data.frame(gene_count) #Turn into data frame
-sorted_gene_count_table <- gene_count_table[order(-gene_count_table[,2]),]
+# Sort the table by genes with descending number of publications
+sorted_gene_count_table <- gene_count_table[order(-gene_count_table[,2]),] 
 colnames(sorted_gene_count_table) <- c("gene","count")
 rownames(sorted_gene_count_table) <- NULL
 
@@ -71,7 +75,7 @@ total_linked_pub_count_term <- length(unique(gene2pubmed_tax_term$PubMed_ID))
 
 # Output: how many times have each gene been linked in all of pubmed?
 output <- paste("GeneID", "TotalPubCount", "TissuePubCount", "Semantic Distance", "Uniprot","GN","PN", sep = "\t")
-write(output, file="Similarity_output.txt")
+write(output, file=output_location)
 
 # Annotation file for Uniprot, GN, and PN
 annot = read.csv(file = annotation_location);
@@ -99,7 +103,7 @@ for (c in 1:nrow(sorted_gene_count_table))
   similarity_numerator = max(log10(total_linked_pub_count_term),log10(linked_pub_count_all_tissues)) - log10(sorted_gene_count_table$count[c])
   similarity_denominator = log10(total_linked_pub_count) - min(log10(total_linked_pub_count_term),log10(linked_pub_count_all_tissues))
   output <- paste(gene, linked_pub_count_all_tissues, sorted_gene_count_table$count[c], round(similarity_numerator/similarity_denominator,3), annotUni[c], annotGN[c], annotPN[c], sep = "\t")
-  write(output, file="Similarity_output.txt", append=T)
+  write(output, file=output_location, append=T)
 }
 
 ################### GENE 2 GENE CLUSTER #############################
@@ -143,7 +147,7 @@ for (d in 1:depth)
 }
 require("heatmap3")
 require("RColorBrewer")
-heatmap3(matching_matrix,col=brewer.pal(9,"YlOrRd"))
+heatmap3(matching_matrix,col=brewer.pal(9,"Reds"))
 
 # Printing out the clustered genes in order
 map <- heatmap3(matching_matrix,col=brewer.pal(9,"YlOrRd"))
