@@ -7,7 +7,7 @@ gene_wiki_local_file <- "GeneWiki Record/genewiki-latest.txt"
 
 
 counter_location <- "http://stats.grok.se/json/en/"
-date <- "201503"
+date <- "201204"
 
 output_location <- paste("Wiki_Count",date,".txt",sep="")
 
